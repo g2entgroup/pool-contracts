@@ -45,10 +45,12 @@ const config = {
     },
     comptroller: {
       1: "0x4027dE966127af5F015Ea1cfd6293a3583892668",
+      4: "0x05821572f54C10445379F5A1aD55f4FfFa9e187d",
       77: "0x14e194Cf5E1dd73BB46256495aEa8ff36A7Aa454",
     },
     reserveRegistry: {
       1: "0x3e8b9901dBFE766d3FE44B36c180A1bca2B9A295",
+      4: "0xaDae16a9A1B648Cdc753558Dc19780Ea824a3904",
     },
     rng: {
       42: RNGBlockhashKovan.address,
