@@ -755,6 +755,11 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-3.4.0.tgz#7674c73c643a509f1b90c509e3e72fe9aae02aeb"
   integrity sha512-7wBcbukDqWZt/B1zjb7zyeWq+AC7rx7nGln7/hPxHdKd8PAiiteXd51Cp2KmGP8qaY0/TXh/fQLsA082LWp8Zw==
 
+"@pooltogether/current-pool-data@^3.3.2":
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/@pooltogether/current-pool-data/-/current-pool-data-3.3.2.tgz#69ebcb28809ab00f8328aca202d782eebb8959fe"
+  integrity sha512-Ji9uvpYX1NnN0zNRTbNgpfZLRENM4mPLrdgg//ENPVqMxN7+SRNeDMxoHsJYZSpfu3O52AbSZwZVqo5NM+jpNQ==
+
 "@pooltogether/fixed-point@1.0.0-beta.2":
   version "1.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/@pooltogether/fixed-point/-/fixed-point-1.0.0-beta.2.tgz#d76a1e77f21833e9b680296d65526b0ffd7415d7"
