@@ -39,7 +39,7 @@
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "3.4.0",
     "@pooltogether/fixed-point": "1.0.0-beta.2",
-    "@pooltogether/loot-box": "^1.1.0",
+    "@pooltogether/loot-box": "https://github.com/g2entgroup/creative-lootbox.git",
     "@pooltogether/pooltogether-rng-contracts": "1.0.0",
     "@pooltogether/uniform-random-number": "1.0.0-beta.1",
     "deploy-eip-1820": "1.0.0",
