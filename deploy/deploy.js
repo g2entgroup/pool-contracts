@@ -93,6 +93,13 @@ module.exports = async (hardhat) => {
     })
     rng = rngServiceMockResult.address
 
+    cyan(`\nDeploying ATokenYieldSourceProxyFactory...`);
+    const aTokenYieldSourceProxyFactoryResult = await deploy('ATokenYieldSourceProxyFactory', {
+      from: deployer,
+      skipIfAlreadyDeployed: true
+    });
+    displayResult('ATokenYieldSourceProxyFactory', aTokenYieldSourceProxyFactoryResult);
+
     cyan("\nDeploying Dai...")
     const daiResult = await deploy("Dai", {
       args: [
