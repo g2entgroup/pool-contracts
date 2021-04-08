@@ -5,8 +5,7 @@ pragma solidity >=0.6.0 <0.7.0;
 import "@aave/protocol-v2/contracts/interfaces/ILendingPool.sol";
 import "@aave/protocol-v2/contracts/interfaces/ILendingPoolAddressesProvider.sol";
 import "@aave/protocol-v2/contracts/interfaces/ILendingPoolAddressesProviderRegistry.sol";
-import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 import "@pooltogether/fixed-point/contracts/FixedPoint.sol";
@@ -18,7 +17,7 @@ import "../yield-source/YieldSourceInterface.sol";
 /// @title Yield source for a PoolTogether prize pool that generates yield by depositing into Aave V2.
 /// @dev This contract inherits from the ERC20 implementation to keep track of users deposits
 /// @notice Yield Source Prize Pools subclasses need to implement this interface so that yield can be generated.
-contract ATokenYieldSource is ERC20Upgradeable, YieldSourceInterface, AssetManager {
+contract ATokenYieldSource is YieldSourceInterface, AssetManager {
   using SafeMathUpgradeable for uint256;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -87,7 +86,7 @@ contract ATokenYieldSource is ERC20Upgradeable, YieldSourceInterface, AssetManag
   /// @notice Returns the ERC20 asset token used for deposits
   /// @return The ERC20 asset token address
   function depositToken() public view override returns (address) {
-    return _tokenAddress()
+    return _tokenAddress();
   }
 
   /// @notice Returns the underlying asset token address

@@ -63,7 +63,9 @@ module.exports = async (hardhat) => {
     comptroller,
     sablier,
     reserveRegistry,
-    testnetCDai
+    testnetCDai,
+    sushiBar,
+    sushiToken
   } = await getNamedAccounts()
   const chainId = parseInt(await getChainId(), 10)
   // 31337 is unit testing, 1337 is for coverage
@@ -99,6 +101,14 @@ module.exports = async (hardhat) => {
       skipIfAlreadyDeployed: true
     });
     displayResult('ATokenYieldSourceProxyFactory', aTokenYieldSourceProxyFactoryResult);
+
+    cyan(`\nDeploying SushiYieldSource...`);
+    const sushiYieldSourceResult = await deploy('SushiYieldSource', {
+      from: deployer,
+      args: [sushiBar, sushiToken],
+      skipIfAlreadyDeployed: true
+    });
+    displayResult('SushiYieldSource', sushiYieldSourceResult);
 
     cyan("\nDeploying Dai...")
     const daiResult = await deploy("Dai", {
