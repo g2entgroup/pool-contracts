@@ -1,3 +1,4 @@
+
 const networks = require('./hardhat.networks')
 
 const RNGBlockhashRopsten = require('@pooltogether/pooltogether-rng-contracts/deployments/ropsten/RNGBlockhash.json')
@@ -92,6 +93,7 @@ const config = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
+
     apiKey: process.env.ETHERSCAN_API_KEY
   },
   mocha: {

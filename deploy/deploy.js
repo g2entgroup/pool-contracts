@@ -62,12 +62,14 @@ module.exports = async (hardhat) => {
     admin,
     comptroller,
     sablier,
+
     reserveRegistry,
     testnetCDai,
     sushiBar,
     sushiToken
   } = await getNamedAccounts()
   const chainId = parseInt(await getChainId(), 10)
+
   // 31337 is unit testing, 1337 is for coverage
   const isTestEnvironment = chainId === 31337 || chainId === 1337
 
@@ -78,6 +80,7 @@ module.exports = async (hardhat) => {
   dim("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
   dim(`network: ${chainName(chainId)} (${isTestEnvironment ? 'local' : 'remote'})`)
+
   dim(`deployer: ${deployer}`)
   if (!admin) {
     admin = signer._address
@@ -232,6 +235,7 @@ module.exports = async (hardhat) => {
     }
 
     reserveRegistry = reserveRegistryResult.address
+    
   } else {
     yellow(`Using existing reserve registry ${reserveRegistry}`)
   }
@@ -314,6 +318,7 @@ module.exports = async (hardhat) => {
   else{
     cyan("\nDeploying StakePrizePoolProxyFactory...")
     stakePrizePoolProxyFactoryResult = await deploy("StakePrizePoolProxyFactory", {
+
       from: deployer,
       skipIfAlreadyDeployed: true
     })

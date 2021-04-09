@@ -9,7 +9,9 @@ import "./BeforeAwardListener.sol";
 import "../external/sablier/ISablier.sol";
 import "./PeriodicPrizeStrategy.sol";
 
+
 /* solium-disable security/no-block-members */
+
 /// @title Manages Sablier streams for Prize Pools.  Can be attached to Periodic Prize Strategies so that streams are withdrawn before awarding.
 contract SablierManager is BeforeAwardListener {
 
@@ -37,6 +39,7 @@ contract SablierManager is BeforeAwardListener {
   /// @param prizePool The Prize Pool for which to stream tokens to
   /// @param deposit The amount of tokens to deposit into the stream
   /// @param token The token that is being deposited
+
   /// @param duration The duration of the stream in seconds
   /// @return The id of the newly created stream
   function createSablierStreamWithDuration(
@@ -54,6 +57,7 @@ contract SablierManager is BeforeAwardListener {
   /// @param prizePool The Prize Pool for which to stream tokens to
   /// @param deposit The amount of tokens to deposit into the stream
   /// @param token The token that is being deposited
+
   /// @param startTime The time at which the stream starts.  Must be in the future.
   /// @param stopTime The time at which the stream ends.  Must be later than the start time.
   /// @return The id of the newly created stream
@@ -63,6 +67,7 @@ contract SablierManager is BeforeAwardListener {
     IERC20Upgradeable token,
     uint256 startTime,
     uint256 stopTime
+
   ) public onlyPrizePoolOwner(prizePool) returns (uint256) {
     cancelSablierStream(prizePool);
     IERC20Upgradeable(token).transferFrom(msg.sender, address(this), deposit);

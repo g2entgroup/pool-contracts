@@ -6,6 +6,7 @@ import "../prize-strategy/SablierManager.sol";
 /* solium-disable security/no-block-members */
 contract SablierManagerHarness is SablierManager {
 
+
   uint256 currentTime;
 
   constructor(ISablier _sablier) public SablierManager(_sablier) {
