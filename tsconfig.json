@@ -6,16 +6,13 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "resolveJsonModule": true,
-    "inlineSourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "removeComments": true
+    "inlineSourceMap": true
   },
   "include": ["./scripts", "./test"],
   "files": [
-    "./hardhat.config.js",
-    "./node_modules/@nomiclabs/hardhat-ethers/src/internal/type-extensions.ts",
-    "./node_modules/@nomiclabs/hardhat-waffle/src/type-extensions.ts",
-    "./node_modules/@nomiclabs/hardhat-etherscan/src/type-extensions.ts"
+    "./hardhat.config.ts",
+    "./node_modules/hardhat-ethers/src/type-extensions.d.ts",
+    "./node_modules/@nomiclabs/hardhat-waffle/src/type-extensions.d.ts",
+    "./node_modules/hardhat-etherscan/src/type-extensions.d.ts"
   ]
 }

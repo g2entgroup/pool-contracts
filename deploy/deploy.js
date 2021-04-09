@@ -40,7 +40,12 @@ const chainName = (chainId) => {
     case 4: return 'Rinkeby';
     case 5: return 'Goerli';
     case 42: return 'Kovan';
+    case 77: return 'POA Sokol';
+    case 99: return 'POA';
+    case 100: return 'xDai';
+    case 137: return 'Matic';
     case 31337: return 'HardhatEVM';
+    case 80001: return 'Matic (Mumbai)';
     default: return 'Unknown';
   }
 }
@@ -57,10 +62,14 @@ module.exports = async (hardhat) => {
     admin,
     comptroller,
     sablier,
-    reserveRegistry
+
+    reserveRegistry,
+    testnetCDai,
+    sushiBar,
+    sushiToken
   } = await getNamedAccounts()
   const chainId = parseInt(await getChainId(), 10)
-  const isLocal = [1, 3, 4, 42, 77, 99].indexOf(chainId) == -1
+
   // 31337 is unit testing, 1337 is for coverage
   const isTestEnvironment = chainId === 31337 || chainId === 1337
 
@@ -70,8 +79,8 @@ module.exports = async (hardhat) => {
   dim("PoolTogether Pool Contracts - Deploy Script")
   dim("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
-  const locus = isLocal ? 'local' : 'remote'
-  dim(`network: ${chainName(chainId)} (${locus})`)
+  dim(`network: ${chainName(chainId)} (${isTestEnvironment ? 'local' : 'remote'})`)
+
   dim(`deployer: ${deployer}`)
   if (!admin) {
     admin = signer._address
@@ -80,12 +89,29 @@ module.exports = async (hardhat) => {
 
   await deploy1820(signer)
 
-  if (isLocal) {
+  let cDaiAddress = testnetCDai
+  if (isTestEnvironment) {
     cyan("\nDeploying RNGService...")
     const rngServiceMockResult = await deploy("RNGServiceMock", {
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
     rng = rngServiceMockResult.address
+
+    cyan(`\nDeploying ATokenYieldSourceProxyFactory...`);
+    const aTokenYieldSourceProxyFactoryResult = await deploy('ATokenYieldSourceProxyFactory', {
+      from: deployer,
+      skipIfAlreadyDeployed: true
+    });
+    displayResult('ATokenYieldSourceProxyFactory', aTokenYieldSourceProxyFactoryResult);
+
+    cyan(`\nDeploying SushiYieldSource...`);
+    const sushiYieldSourceResult = await deploy('SushiYieldSource', {
+      from: deployer,
+      args: [sushiBar, sushiToken],
+      skipIfAlreadyDeployed: true
+    });
+    displayResult('SushiYieldSource', sushiYieldSourceResult);
 
     cyan("\nDeploying Dai...")
     const daiResult = await deploy("Dai", {
@@ -94,7 +120,8 @@ module.exports = async (hardhat) => {
         'DAI'
       ],
       contract: 'ERC20Mintable',
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
 
     cyan("\nDeploying cDai...")
@@ -106,30 +133,37 @@ module.exports = async (hardhat) => {
         supplyRate
       ],
       contract: 'CTokenMock',
-      from: deployer
-    })
-
-    await deploy("cDaiYieldSource", {
-      args: [
-        cDaiResult.address
-      ],
-      contract: "CTokenYieldSource",
       from: deployer,
       skipIfAlreadyDeployed: true
     })
+    cDaiAddress = cDaiResult.address
 
     await deploy("yDai", {
       args: [
         daiResult.address
       ],
       contract: 'yVaultMock',
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
 
     // Display Contract Addresses
     dim("\nLocal Contract Deployments;\n")
     dim("  - RNGService:       ", rng)
     dim("  - Dai:              ", daiResult.address)
+  }
+
+  if (cDaiAddress) {
+    cyan("\nDeploy cDaiYieldSource...")
+    const cDaiYieldSourceResult = await deploy("cDaiYieldSource", {
+      args: [
+        cDaiAddress
+      ],
+      contract: "CTokenYieldSource",
+      from: deployer,
+      skipIfAlreadyDeployed: true
+    })
+    displayResult('cDaiYieldSource', cDaiYieldSourceResult)
   }
 
   let comptrollerAddress = comptroller
@@ -139,7 +173,8 @@ module.exports = async (hardhat) => {
     const contract = isTestEnvironment ? 'ComptrollerHarness' : 'Comptroller'
     const comptrollerResult = await deploy("Comptroller", {
       contract,
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
     comptrollerAddress = comptrollerResult.address
     const comptrollerContract = await hardhat.ethers.getContractAt(
@@ -150,7 +185,7 @@ module.exports = async (hardhat) => {
     if (admin !== deployer) {
       await comptrollerContract.transferOwnership(admin)
     }
-    green(`Comptroller deployed at ${comptrollerAddress}`)
+    displayResult('Comptroller', comptrollerResult)
   } else {
     yellow(`Re-used existing Comptroller at ${comptrollerAddress}`)
   }
@@ -165,7 +200,8 @@ module.exports = async (hardhat) => {
     // if not set by named config
     cyan(`\nDeploying Reserve...`)
     const reserveResult = await deploy("Reserve", {
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
     displayResult('Reserve', reserveResult)
 
@@ -181,7 +217,8 @@ module.exports = async (hardhat) => {
     cyan(`\nDeploying ReserveRegistry...`)
     const reserveRegistryResult = await deploy("ReserveRegistry", {
       contract: 'Registry',
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
     displayResult('ReserveRegistry', reserveRegistryResult)
 
@@ -198,7 +235,7 @@ module.exports = async (hardhat) => {
     }
 
     reserveRegistry = reserveRegistryResult.address
-    green(`Created new reserve registry ${reserveRegistry}`)
+    
   } else {
     yellow(`Using existing reserve registry ${reserveRegistry}`)
   }
@@ -206,17 +243,19 @@ module.exports = async (hardhat) => {
   let permitAndDepositDaiResult
   cyan("\nDeploying PermitAndDepositDai...")
   permitAndDepositDaiResult = await deploy("PermitAndDepositDai", {
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('PermitAndDepositDai', permitAndDepositDaiResult)
 
   if (sablier) {
     cyan("\nDeploying SablierManager")
     let sablierManagerResult = await deploy("SablierManager", {
-      from: deployer,
       args: [
         sablier
-      ]
+      ],
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
     displayResult('SablierManager', sablierManagerResult)
   }
@@ -226,11 +265,13 @@ module.exports = async (hardhat) => {
   if (isTestEnvironment && !harnessDisabled) {
     compoundPrizePoolProxyFactoryResult = await deploy("CompoundPrizePoolProxyFactory", {
       contract: 'CompoundPrizePoolHarnessProxyFactory',
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
   } else {
     compoundPrizePoolProxyFactoryResult = await deploy("CompoundPrizePoolProxyFactory", {
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
   }
   displayResult('CompoundPrizePoolProxyFactory', compoundPrizePoolProxyFactoryResult)
@@ -253,13 +294,15 @@ module.exports = async (hardhat) => {
 
   cyan("\nDeploying ControlledTokenProxyFactory...")
   const controlledTokenProxyFactoryResult = await deploy("ControlledTokenProxyFactory", {
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('ControlledTokenProxyFactory', controlledTokenProxyFactoryResult)
 
   cyan("\nDeploying TicketProxyFactory...")
   const ticketProxyFactoryResult = await deploy("TicketProxyFactory", {
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('TicketProxyFactory', ticketProxyFactoryResult)
   
@@ -268,20 +311,24 @@ module.exports = async (hardhat) => {
     cyan("\nDeploying StakePrizePoolHarnessProxyFactory...")
     stakePrizePoolProxyFactoryResult = await deploy("StakePrizePoolProxyFactory", {
       contract: 'StakePrizePoolHarnessProxyFactory',
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
   }
   else{
     cyan("\nDeploying StakePrizePoolProxyFactory...")
     stakePrizePoolProxyFactoryResult = await deploy("StakePrizePoolProxyFactory", {
-      from: deployer
+
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
   }
   displayResult('StakePrizePoolProxyFactory', stakePrizePoolProxyFactoryResult)
 
   cyan("\nDeploying UnsafeTokenListenerDelegatorProxyFactory...")
   const unsafeTokenListenerDelegatorProxyFactoryResult = await deploy("UnsafeTokenListenerDelegatorProxyFactory", {
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('UnsafeTokenListenerDelegatorProxyFactory', unsafeTokenListenerDelegatorProxyFactoryResult)
 
@@ -290,18 +337,21 @@ module.exports = async (hardhat) => {
   if (isTestEnvironment && !harnessDisabled) {
     multipleWinnersProxyFactoryResult = await deploy("MultipleWinnersProxyFactory", {
       contract: 'MultipleWinnersHarnessProxyFactory',
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
   } else {
     multipleWinnersProxyFactoryResult = await deploy("MultipleWinnersProxyFactory", {
-      from: deployer
+      from: deployer,
+      skipIfAlreadyDeployed: true
     })
   }
   displayResult('MultipleWinnersProxyFactory', multipleWinnersProxyFactoryResult)
 
   cyan("\nDeploying SingleRandomWinnerProxyFactory...")
   const singleRandomWinnerProxyFactoryResult = await deploy("SingleRandomWinnerProxyFactory", {
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('SingleRandomWinnerProxyFactory', singleRandomWinnerProxyFactoryResult)
 
@@ -311,7 +361,8 @@ module.exports = async (hardhat) => {
       controlledTokenProxyFactoryResult.address,
       ticketProxyFactoryResult.address
     ],
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('ControlledTokenBuilder', controlledTokenBuilderResult)
 
@@ -321,7 +372,8 @@ module.exports = async (hardhat) => {
       multipleWinnersProxyFactoryResult.address,
       controlledTokenBuilderResult.address,
     ],
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('MultipleWinnersBuilder', multipleWinnersBuilderResult)
 
@@ -334,7 +386,8 @@ module.exports = async (hardhat) => {
       stakePrizePoolProxyFactoryResult.address,
       multipleWinnersBuilderResult.address
     ],
-    from: deployer
+    from: deployer,
+    skipIfAlreadyDeployed: true
   })
   displayResult('PoolWithMultipleWinnersBuilder', poolWithMultipleWinnersBuilderResult)
 

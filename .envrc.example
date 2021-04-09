@@ -1,14 +1,20 @@
 # Used to deploy to testnets
-export HDWALLET_MNEMONIC=''
+
+export HDWALLET_MNEMONIC='absent trumpet helmet lottery fall impulse access open brave addict misery very teach become jacket'
 
 # Used to deploy to testnets
-export INFURA_API_KEY=''
+export INFURA_API_KEY='ff5a5c50d1e649bdb777f80813747e3d'
+
+# Used to deploy to testnets
+export MATIC_API_KEY='e177065d32c84dd8026223e249825190de1394b9'
 
 # Used for verifying contracts on Etherscan
-export ETHERSCAN_API_KEY=''
+export ETHERSCAN_API_KEY='97B3KRSTGKB1V3YS9IHK27KY6XFSJZIQR5'
+
 
 # Required for forking
 export ALCHEMY_URL=''
 
 #required for mainnet governance forking testnets
-export PATH_TO_GOVERNANCE_REPO=''
+
+export PATH_TO_GOVERNANCE_REPO='https://github.com/g2entgroup/creative-governance.git'
